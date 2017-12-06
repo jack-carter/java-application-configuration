@@ -1,0 +1,95 @@
+package com.shinobigroup.configuration;
+
+import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
+import java.util.Set;
+
+public abstract class ApplicationSettings {
+	
+	public interface SYSTEM {
+		public String FILE_SEPARATOR  = "file.separator";
+		public String LINE_SEPARATOR  = "line.separator";
+		public String PATH_SEPARATOR  = "path.separator";
+		public String OS_ARCHITECTURE = "os.arch";
+		public String OS_NAME         = "os.name";
+		public String OS_VERSION      = "os.version";
+		public String JAVA_CLASSPATH  = "java.class.path";
+		public String JAVA_HOME       = "java.home";
+		public String JAVA_VENDOR     = "java.vendor";
+		public String JAVA_VENDOR_URL = "java.vendor.url";
+		public String JAVA_VERSION    = "java.version";
+		public String USER_DIRECTORY  = "user.dir";
+		public String USER_HOME       = "user.home";
+		public String USER_NAME       = "user.name";
+	}
+	
+	static final String AUTO_ATTACH = "application.settings.auto.attach";
+	static final String ENABLED     = "true";
+	static final String DISABLED    = "false";
+	
+	static PropertiesNotifier instance;
+	
+	//
+	// Initialization
+	//
+	
+	static {
+		if (ENABLED.equals(System.getProperty(AUTO_ATTACH,ENABLED).toLowerCase()))
+			init();
+	}
+	
+	static void init() {
+		if (instance == null) {
+			System.setProperties( instance = new PropertiesNotifier( System.getProperties() ) ); 			
+		}
+	}
+	
+	//
+	// Property Enumeration
+	//
+	
+	public static Enumeration<?> propertyNames() {
+		return instance.propertyNames();
+	}
+	
+	public static Set<String> stringPropertyNames() {
+		return instance.stringPropertyNames();
+	}
+	
+	//
+	// Property Accessors
+	//
+	
+	public static String getProperty(String key) {
+		return instance.getProperty(key);
+	}
+	
+	public static String getProperty(String key, String defaultValue) {
+		return instance.getProperty(key,defaultValue);
+	}
+	
+	public static Object setProperty(String key, String value) {
+		return instance.setProperty(key, value);
+	}
+	
+	//
+	// Property Change notifications
+	//
+	
+	public static void addPropertyChangeListener(PropertyChangeListener listener) {
+		instance.addPropertyChangeListener(listener);
+	}
+
+	public static void removePropertyChangeListener(PropertyChangeListener listener) {
+		instance.removePropertyChangeListener(listener);
+	}
+	
+	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+		instance.addPropertyChangeListener(property, listener);
+	}
+
+	public static void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+		instance.removePropertyChangeListener(property, listener);
+	}
+	
+}

@@ -1,0 +1,26 @@
+package com.shinobigroup.configuration;
+
+import java.util.Properties;
+
+public abstract class ApplicationSettings {
+
+	private static final long serialVersionUID = -2153409728218061450L;
+	
+	static PropertiesNotifier instance;
+	
+	//
+	// Initialization
+	//
+	
+	static void init() {
+		System.setProperties( instance = new PropertiesNotifier( System.getProperties() ) ); 
+	}
+	
+	//
+	// Class interface
+	//
+	
+	public static String getProperty(String key) {
+		return instance.getProperty(key);
+	}
+}

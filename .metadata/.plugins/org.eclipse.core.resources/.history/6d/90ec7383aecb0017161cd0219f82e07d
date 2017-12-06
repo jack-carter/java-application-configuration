@@ -1,0 +1,36 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.*;
+
+import com.shinobigroup.configuration.ApplicationSettings;
+
+public class ApplicationSettingsTest {
+	
+	private static final Properties system = System.getProperties();
+	
+	@BeforeClass
+	public static void initialize() {
+		ApplicationSettings.init();	
+	}
+	
+	@AfterClass
+	public static void replaceSystemProperties() {
+		System.setProperties(system);
+	}
+	
+	@Test
+	public void initReplacesSystemProperties() {
+		assertSame( ApplicationSettings.instance, System.getProperties() );
+		assertNotSame( ApplicationSettings.instance, system );
+	}
+	
+	@Test
+	public void allSystemPropertiesArePresent() {
+		fail();
+	}
+	
+}

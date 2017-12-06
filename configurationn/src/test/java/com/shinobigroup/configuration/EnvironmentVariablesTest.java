@@ -1,0 +1,88 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.junit.*;
+
+public class EnvironmentVariablesTest {
+
+	static final String SOME_WEIRD_VALUE = "some.weird.value";
+	static final Map<String,String> ENVIRONMENT = System.getenv();
+	static final Properties SYSTEM = System.getProperties();
+	
+	@Test
+	public void neverAltersEnvironmentVariables() {
+		EnvironmentVariables env = new EnvironmentVariables();
+		ENVIRONMENT.entrySet().forEach(entry -> {
+			env.setProperty(entry.getKey(), SOME_WEIRD_VALUE);
+			assertEquals( entry.getValue(), env.getProperty(entry.getKey()) );
+		});
+	}
+	
+	@Test
+	public void providesSetOfPropertyNamesWhenNoDefaultsPresent() {
+		Set<String> keys = ENVIRONMENT.keySet();
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allPresent = keys::equals;
+		EnvironmentVariables env = new EnvironmentVariables();
+		assertTrue( allPresent.test( env.stringPropertyNames() ));	
+	}
+
+	@Test
+	public void providesSetOfPropertyNamesIncludingDefaults() {
+		Set<Object> keys = new HashSet<Object>();
+		keys.addAll(ENVIRONMENT.keySet());
+		keys.addAll(SYSTEM.keySet());
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allPresent = keys::equals;
+		EnvironmentVariables env = new EnvironmentVariables(SYSTEM);
+		assertTrue( allPresent.test( env.stringPropertyNames() ));	
+	}
+
+	@Test
+	public void providesEnumerationOfPropertyNamesWhenNoDefaultsPresent() {
+		EnvironmentVariables env = new EnvironmentVariables();
+		int count = 0;
+		Enumeration<?> names = env.propertyNames();
+		while (names.hasMoreElements()) {
+			Object name = names.nextElement();
+			count += ENVIRONMENT.containsKey(name) ? 1 : 0;
+		}
+		
+		assertEquals( count, ENVIRONMENT.size() );
+	}
+
+	@Test
+	public void providesEnumerationOfPropertyNamesIncludingDefaults() {
+		EnvironmentVariables env = new EnvironmentVariables(SYSTEM);
+		int count = 0;
+		Enumeration<?> names = env.propertyNames();
+		while (names.hasMoreElements()) {
+			Object name = names.nextElement();
+			count += (ENVIRONMENT.containsKey(name) || SYSTEM.containsKey(name)) ? 1 : 0;
+		}
+		
+		assertEquals( count, ENVIRONMENT.size() + SYSTEM.size() );	
+	}
+
+	@Test
+	public void listsAllPropertiesToPrintStream() {
+		EnvironmentVariables env = new EnvironmentVariables(SYSTEM);
+		env.list(System.out);
+	}
+	
+	@Test
+	public void listsAllPropertiesToPrintWriter() {
+		EnvironmentVariables env = new EnvironmentVariables(SYSTEM);
+		env.list(new PrintWriter(System.out));
+	}
+	
+}

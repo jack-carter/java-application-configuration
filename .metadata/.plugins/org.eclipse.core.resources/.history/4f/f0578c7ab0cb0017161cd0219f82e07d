@@ -1,0 +1,9 @@
+package com.shinobigroup.configuration;
+
+public class PropertiesNotifier extends Properties {
+
+	public PropertiesNotifier() {}
+	public PropertiesNotifier(Properties defaults) {
+		super(defaults);
+	}
+}

@@ -1,0 +1,34 @@
+package com.shinobigroup.configuration;
+
+import java.util.Properties;
+import java.util.Set;
+
+@SuppressWarnings("serial")
+public class EnvironmentVariables extends Properties {
+
+	public EnvironmentVariables() {}
+	public EnvironmentVariables(Properties defaults) {
+		super(defaults);
+	}
+	
+	@Override
+	public String getProperty(String key) {
+		return System.getenv(key);
+	}
+	
+	@Override 
+	public String getProperty(String key, String defaultValue) {
+		String value = getProperty(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	@Override
+	public Object setProperty(String key, String value) {
+		return value;
+	}
+	
+	@Override
+	public Set<String> stringPropertyNames() {
+		return System.getenv().keySet();
+	}
+}

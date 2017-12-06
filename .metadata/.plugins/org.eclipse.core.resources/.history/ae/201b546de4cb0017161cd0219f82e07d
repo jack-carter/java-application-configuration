@@ -1,0 +1,50 @@
+package com.shinobigroup.configuration;
+
+import java.beans.PropertyChangeListener;
+
+public abstract class ApplicationSettings {
+	
+	static PropertiesNotifier instance;
+	
+	//
+	// Initialization
+	//
+	
+	static void init() {
+		if (instance == null)
+			System.setProperties( instance = new PropertiesNotifier( System.getProperties() ) ); 
+	}
+	
+	//
+	// Property Accessors
+	//
+	
+	public static String getProperty(String key) {
+		return instance.getProperty(key);
+	}
+	
+	public static Object setProperty(String key, String value) {
+		return instance.setProperty(key, value);
+	}
+	
+	//
+	// Property Change notifications
+	//
+	
+	public static void addPropertyChangeListener(PropertyChangeListener listener) {
+		instance.addPropertyChangeListener(listener);
+	}
+
+	public static void removePropertyChangeListener(PropertyChangeListener listener) {
+		instance.removePropertyChangeListener(listener);
+	}
+	
+	public static void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+		instance.addPropertyChangeListener(property, listener);
+	}
+
+	public static void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+		instance.removePropertyChangeListener(property, listener);
+	}
+	
+}

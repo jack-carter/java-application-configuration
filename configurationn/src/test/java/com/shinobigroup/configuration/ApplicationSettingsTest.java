@@ -1,0 +1,125 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+
+import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.junit.*;
+
+import com.shinobigroup.configuration.ApplicationSettings;
+
+public class ApplicationSettingsTest {
+	
+	private static final String PROPERTY = "test.property";
+	private static final String OTHER_PROPERTY = "other.property";
+	private static final String SOME_WILD_PROPERTY = "some.wild.property";
+	private static final String NO_WAY_THIS_PROPERTY_EXISTS = "no.way.this.property.exists";
+	private static final String VALUE = "a.property.value";
+	private static final String OTHER_VALUE = "some.other.value";
+	
+	private static final Properties SYSTEM = System.getProperties();
+	
+	@AfterClass
+	public static void returnToNormal() {
+		System.setProperties(SYSTEM);
+	}
+	
+	@Test
+	public void onlyInitializesOnce() {
+		Properties instance = System.getProperties();
+		ApplicationSettings.init();
+		assertSame( instance, System.getProperties() );		
+	}
+	
+	@Test
+	public void replacesSystemProperties() {
+		assertSame( ApplicationSettings.instance, System.getProperties() );
+		assertNotSame( ApplicationSettings.instance, SYSTEM );
+	}
+	
+	@Test
+	public void allSystemPropertiesArePresent() {
+		Set<String> keys = new HashSet<String>();
+		keys.addAll(SYSTEM.stringPropertyNames());
+		keys.addAll(new EnvironmentVariables().stringPropertyNames());
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allMatch = keys::equals;
+		assertTrue( allMatch.test( ApplicationSettings.stringPropertyNames() ) );
+	}
+	
+	@Test
+	public void allSystemPropertiesCanBeEnumerated() {
+		Enumeration<?> keys = ApplicationSettings.propertyNames();
+		int count = 0;
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			count += SYSTEM.containsKey(key) ? 1 : 0;
+		}
+		assertEquals( count, SYSTEM.size() );
+	}
+	
+	@Test
+	public void changesToSystemPropertiesAppearInApplicationSettings() {
+		assertEquals( ApplicationSettings.getProperty(SOME_WILD_PROPERTY), null );
+		System.setProperty(SOME_WILD_PROPERTY, VALUE);
+		assertEquals( ApplicationSettings.getProperty(SOME_WILD_PROPERTY), VALUE );
+	}
+	
+	@Test
+	public void missingPropertiesCanBeRetrievedWithADefaultValue() {
+		assertEquals( ApplicationSettings.getProperty(NO_WAY_THIS_PROPERTY_EXISTS), null );
+		assertEquals( ApplicationSettings.getProperty(NO_WAY_THIS_PROPERTY_EXISTS,VALUE), VALUE );
+	}
+	
+	@Test
+	public void notifiesOfAllPropertyChanges() {
+		int[] result = new int[]{0};
+		PropertyChangeListener catcher = event -> { result[0]++; };
+		ApplicationSettings.addPropertyChangeListener(catcher);
+		ApplicationSettings.setProperty(PROPERTY,VALUE);
+		assertEquals( result[0], 1 );
+		ApplicationSettings.setProperty(OTHER_PROPERTY,OTHER_VALUE);
+		assertEquals( result[0], 2 );
+	}
+	
+	@Test
+	public void notifiesOfAllChangesToSpecificProperty() {
+		int[] result = new int[]{0};
+		PropertyChangeListener catcher = event -> { result[0]++; };
+		ApplicationSettings.addPropertyChangeListener(PROPERTY,catcher);
+		ApplicationSettings.setProperty(PROPERTY,OTHER_VALUE);
+		assertEquals( result[0], 1 );
+		ApplicationSettings.setProperty(OTHER_PROPERTY,VALUE);
+		assertEquals( result[0], 1 );
+	}
+	
+	@Test
+	public void stopsNotifiyingUponRemove() {
+		int[] result = new int[]{0};
+		PropertyChangeListener catcher = event -> { result[0]++; };
+		ApplicationSettings.addPropertyChangeListener(PROPERTY,catcher);
+		ApplicationSettings.setProperty(PROPERTY,VALUE);
+		assertEquals( result[0], 1 );
+		ApplicationSettings.removePropertyChangeListener(PROPERTY,catcher);
+		ApplicationSettings.setProperty(PROPERTY,OTHER_VALUE);
+		assertEquals( result[0], 1 );
+	}
+
+	@Test
+	public void stopsNotifiyingUponGlobalRemove() {
+		int[] result = new int[]{0};
+		PropertyChangeListener catcher = event -> { result[0]++; };
+		ApplicationSettings.addPropertyChangeListener(catcher);
+		ApplicationSettings.setProperty(PROPERTY,VALUE);
+		assertEquals( result[0], 1 );
+		ApplicationSettings.removePropertyChangeListener(catcher);
+		ApplicationSettings.setProperty(PROPERTY,OTHER_VALUE);
+		assertEquals( result[0], 1 );
+	}
+
+}

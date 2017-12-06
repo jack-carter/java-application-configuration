@@ -1,0 +1,100 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+import org.junit.*;
+
+import java.util.Properties;
+import java.beans.*;
+
+public class PropertiesNotifierTest {
+
+	static final String PROPERTY = "test.property";
+	static final String VALUE    = "test.value";
+	
+	static final String OTHER_PROPERTY = "other.property";
+	static final String OTHER_VALUE    = "other.value";
+	
+	Properties properties;
+	PropertiesNotifier notifier;
+	
+	@Before
+	public void setup() {
+		properties = new Properties();
+		notifier = new PropertiesNotifier(properties);		
+	}
+	
+	@Test
+	public void notifiesWhenAnyPropertyChanges() {
+		boolean[] result = new boolean[]{false};
+		notifier.addPropertyChangeListener(event -> { result[0] = true; } );
+		
+		notifier.setProperty(OTHER_PROPERTY, OTHER_VALUE);
+		assertTrue( result[0] );
+		
+		result[0] = false;
+		
+		notifier.setProperty(PROPERTY, VALUE);
+		assertTrue( result[0] );
+	}
+	
+	@Test
+	public void notifiesOnlyWhenSpecificPropertyChanges() {
+		boolean[] result = new boolean[]{false};
+		notifier.addPropertyChangeListener(PROPERTY, event -> { result[0] = true; } );
+		
+		notifier.setProperty(OTHER_PROPERTY, OTHER_VALUE);
+		assertFalse( result[0] );
+		
+		notifier.setProperty(PROPERTY, VALUE);
+		assertTrue( result[0] );
+	}
+	
+	@Test
+	public void stopsNotifyingListenersOfAllProperties() {
+		boolean[] result = new boolean[]{false};
+		PropertyChangeListener catcher = event -> { result[0] = true; }; 
+		
+		notifier.addPropertyChangeListener(catcher);
+		notifier.setProperty(PROPERTY, VALUE);
+		assertTrue( result[0] );
+		
+		result[0] = false;
+		
+		notifier.removePropertyChangeListener(catcher);
+		notifier.setProperty(PROPERTY, VALUE);
+		assertFalse( result[0] );
+	}
+	
+	@Test
+	public void stopsNotifyingListenersOfSpecificProperties() {
+		boolean[] result = new boolean[]{false};
+		PropertyChangeListener catcher = event -> { result[0] = true; }; 
+		
+		notifier.addPropertyChangeListener(PROPERTY,catcher);
+		notifier.setProperty(PROPERTY, VALUE);
+		assertTrue( result[0] );
+		
+		result[0] = false;
+		
+		notifier.removePropertyChangeListener(PROPERTY,catcher);
+		notifier.setProperty(PROPERTY, VALUE);
+		assertFalse( result[0] );		
+	}
+
+	@Test
+	public void stopsNotifyingIndividualListenersOfSpecificProperties() {
+		int[] result = new int[]{0,0};
+		PropertyChangeListener catcher0 = event -> { result[0]++; }; 
+		PropertyChangeListener catcher1 = event -> { result[1]++; }; 
+		
+		notifier.addPropertyChangeListener(PROPERTY,catcher0);
+		notifier.addPropertyChangeListener(PROPERTY,catcher1);
+		notifier.setProperty(PROPERTY, VALUE);
+		assertTrue( result[0] );
+				
+		notifier.removePropertyChangeListener(PROPERTY,catcher1);
+		notifier.setProperty(PROPERTY, VALUE);
+		assertFalse( result[0] );		
+	}
+	
+}

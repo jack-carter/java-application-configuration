@@ -1,0 +1,16 @@
+package com.shinobigroup.configuration;
+
+import java.util.Properties;
+
+public class EnvironmentVariables extends Properties {
+
+	@Override
+	public String getProperty(String key) {
+		return System.getenv(key);
+	}
+	
+	@Override String getProperty(String key, String default) {
+		String value = getProperty(key);
+		return value == null ? default : value);
+	}
+}

@@ -1,0 +1,23 @@
+package com.shinobigroup.configuration;
+
+import java.util.Properties;
+
+public class PropertiesNotifier extends Properties {
+
+	public PropertiesNotifier() {}
+	public PropertiesNotifier(Properties defaults) {
+		super(defaults);
+	}
+	
+	//
+	// Property change notifications
+	//
+	
+	public PropertiesNotifier addPropertyChangeListener(PropertyChangeListener listener) {
+		
+	}
+
+	public PropertiesNotifier addPropertyChangeListener(String property, PropertyChangeListener listener) {
+		
+	}
+}

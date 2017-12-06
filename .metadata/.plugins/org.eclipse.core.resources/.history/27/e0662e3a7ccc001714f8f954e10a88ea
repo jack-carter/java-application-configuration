@@ -1,0 +1,46 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.junit.*;
+
+public class EnvironmentPropertiesTest {
+
+	static final String SOME_WEIRD_VALUE = "some.weird.value";
+	static final Map<String,String> ENVIRONMENT = System.getenv();
+	static final Properties SYSTEM = System.getProperties();
+	
+	@Test
+	public void neverAltersEnvironmentVariables() {
+		EnvironmentProperties env = new EnvironmentProperties();
+		ENVIRONMENT.entrySet().forEach(entry -> {
+			env.setProperty(entry.getKey(), SOME_WEIRD_VALUE);
+			assertEquals( entry.getValue(), env.getProperty(entry.getKey()) );
+		});
+	}
+	
+	@Test
+	public void providesSetOfPropertyNamesWhenNoDefaultsPresent() {
+		Set<String> keys = ENVIRONMENT.keySet();
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allPresent = keys::equals;
+		EnvironmentProperties env = new EnvironmentProperties();
+		assertTrue( allPresent.test( env.stringPropertyNames() ));	
+	}
+
+	@Test
+	public void providesSetOfPropertyNamesIncludingDefaults() {
+		Set<String> keys = ENVIRONMENT.keySet();
+		SYSTEM.keySet().forEach(key -> { keys.add((String)key); }); 
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allPresent = keys::equals;
+		EnvironmentProperties env = new EnvironmentProperties();
+		assertTrue( allPresent.test( env.stringPropertyNames() ));	
+	}
+
+}

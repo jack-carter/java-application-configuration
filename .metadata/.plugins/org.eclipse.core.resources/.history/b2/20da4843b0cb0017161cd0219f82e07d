@@ -1,0 +1,5 @@
+package com.shinobigroup.configuration;
+
+public class PropertiesNotifier {
+
+}

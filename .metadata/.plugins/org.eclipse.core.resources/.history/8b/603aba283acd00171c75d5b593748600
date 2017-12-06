@@ -1,0 +1,7 @@
+package com.shinobigroup.configuration;
+
+import java.util.Properties;
+
+public class CommandLineArguments extends Properties {
+
+}

@@ -1,0 +1,22 @@
+package com.shinobigroup.configuration;
+
+public abstract class ApplicationSettings {
+	
+	static PropertiesNotifier instance;
+	
+	//
+	// Initialization
+	//
+	
+	static void init() {
+		System.setProperties( instance = new PropertiesNotifier( System.getProperties() ) ); 
+	}
+	
+	//
+	// Class interface
+	//
+	
+	public static String getProperty(String key) {
+		return instance.getProperty(key);
+	}
+}

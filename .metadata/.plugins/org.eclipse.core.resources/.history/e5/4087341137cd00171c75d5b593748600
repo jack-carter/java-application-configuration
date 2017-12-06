@@ -1,0 +1,46 @@
+package com.shinobigroup.configuration;
+
+import java.util.Properties;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.io.*;
+
+@SuppressWarnings("serial")
+public class EnvironmentProperties extends Properties {
+
+	// instance initializer
+	{
+		putAll(System.getenv());
+	}
+	
+	public EnvironmentProperties() {}
+	public EnvironmentProperties(Properties defaults) {
+		super(defaults);
+	}
+
+	//
+	// Property accessors
+	//
+	
+	@Override
+	public Object setProperty(String key, String value) {
+		return getProperty(key);
+	}
+	
+	//
+	// Load operations
+	//
+	
+	@Override
+	public void load(InputStream in) {}
+	
+	@Override
+	public void load(Reader reader) {}
+	
+	@Override
+	public void loadFromXML(InputStream in) {}
+}

@@ -1,0 +1,122 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.junit.*;
+
+public class EnvironmentPropertiesTest {
+
+	static final String SOME_WEIRD_VALUE = "some.weird.value";
+	static final Map<String,String> ENVIRONMENT = System.getenv();
+	static final Properties SYSTEM = System.getProperties();
+	
+	@Test
+	public void neverAltersEnvironmentVariables() {
+		EnvironmentProperties env = new EnvironmentProperties();
+		ENVIRONMENT.entrySet().forEach(entry -> {
+			env.setProperty(entry.getKey(), SOME_WEIRD_VALUE);
+			assertEquals( entry.getValue(), env.getProperty(entry.getKey()) );
+		});
+	}
+	
+	@Test
+	public void providesSetOfPropertyNamesWhenNoDefaultsPresent() {
+		Set<String> keys = ENVIRONMENT.keySet();
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allPresent = keys::equals;
+		EnvironmentProperties env = new EnvironmentProperties();
+		assertTrue( allPresent.test( env.stringPropertyNames() ));	
+	}
+
+	@Test
+	public void providesSetOfPropertyNamesIncludingDefaults() {
+		Set<Object> keys = new HashSet<Object>();
+		keys.addAll(ENVIRONMENT.keySet());
+		keys.addAll(SYSTEM.keySet());
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allPresent = keys::equals;
+		EnvironmentProperties env = new EnvironmentProperties(SYSTEM);
+		assertTrue( allPresent.test( env.stringPropertyNames() ));	
+	}
+
+	@Test
+	public void providesEnumerationOfPropertyNamesWhenNoDefaultsPresent() {
+		EnvironmentProperties env = new EnvironmentProperties();
+		int count = 0;
+		Enumeration<?> names = env.propertyNames();
+		while (names.hasMoreElements()) {
+			Object name = names.nextElement();
+			count += ENVIRONMENT.containsKey(name) ? 1 : 0;
+		}
+		
+		assertEquals( count, ENVIRONMENT.size() );
+	}
+
+	@Test
+	public void providesEnumerationOfPropertyNamesIncludingDefaults() {
+		EnvironmentProperties env = new EnvironmentProperties(SYSTEM);
+		int count = 0;
+		Enumeration<?> names = env.propertyNames();
+		while (names.hasMoreElements()) {
+			Object name = names.nextElement();
+			count += (ENVIRONMENT.containsKey(name) || SYSTEM.containsKey(name)) ? 1 : 0;
+		}
+		
+		assertEquals( count, ENVIRONMENT.size() + SYSTEM.size() );	
+	}
+
+	private static class PrintCounter extends OutputStream {
+		
+		private int count = 0;
+		
+		@Override
+		public void close() {}
+		
+		@Override
+		public void flush() {}
+		
+		@Override
+		public void write(byte[] b) {
+			write(b,0,b.length);
+		}
+		
+		@Override
+		public void write(byte[] b, int offset, int len) {
+			count++;
+		}
+		
+		@Override
+		public void write(int b) {}
+		
+	}
+	
+	@Test
+	public void listsAllPropertiesToPrintStream() {
+		EnvironmentProperties env = new EnvironmentProperties(SYSTEM);
+		PrintCounter redirector = new PrintCounter() {
+			private int count = 0;
+			public void write(byte[] b, int offset, int len) {
+				count++;
+			}
+		};
+		
+		env.list( new PrintStream(redirector));
+
+	}
+	
+	@Test
+	public void listsAllPropertiesToPrintWriter() {
+		EnvironmentProperties env = new EnvironmentProperties(SYSTEM);
+
+	}
+	
+}

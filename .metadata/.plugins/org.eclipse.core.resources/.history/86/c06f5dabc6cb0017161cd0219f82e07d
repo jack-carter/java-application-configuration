@@ -1,0 +1,48 @@
+package com.shinobigroup.configuration;
+
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.junit.*;
+
+import com.shinobigroup.configuration.ApplicationSettings;
+
+public class ApplicationSettingsTest {
+	
+	private static final String SOME_WILD_PROPERTY = "some.wild.property";
+	private static final Properties system = System.getProperties();
+	
+	@BeforeClass
+	public static void initialize() {
+		ApplicationSettings.init();	
+	}
+	
+	@AfterClass
+	public static void returnToNormal() {
+		System.setProperties(system);
+	}
+	
+	@Test
+	public void replacesSystemProperties() {
+		assertSame( ApplicationSettings.instance, System.getProperties() );
+		assertNotSame( ApplicationSettings.instance, system );
+	}
+	
+	@Test
+	public void allSystemPropertiesArePresent() {
+		Set<String> keys = system.stringPropertyNames();
+		@SuppressWarnings("rawtypes")
+		Predicate<Set> allMatch = keys::equals;
+		assertTrue( allMatch.test( ApplicationSettings.instance.stringPropertyNames() ) );
+	}
+	
+	@Test
+	public void changesToSystemPropertiesAppearInApplicationSettings() {
+		System.setProperty(SOME_WILD_PROPERTY, VALUE);
+		assertEquals( ApplicationSettings.getProperty(SOME_WILD_PROPERTY) ,VALUE );
+	}
+	
+}
